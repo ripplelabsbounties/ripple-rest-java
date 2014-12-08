@@ -8,7 +8,7 @@ import java.io.IOException;
 @Path("v1")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-interface Ripple {
+public interface Ripple {
 
     @GET
     @Path("accounts/{address}/balances")
@@ -23,16 +23,16 @@ interface Ripple {
     SettingsResponse setSettings(@PathParam("address") String address, SetSettingsRequest settings) throws RippleException, IOException;
 
     @POST
-    @Path("payments")
-    CreatePaymentResponse createPayment(PaymentRequest paymentRequest) throws RippleException, IOException;
+    @Path("accounts/{address}/payments")
+    CreatePaymentResponse createPayment(@PathParam("address") String address, PaymentRequest paymentRequest) throws RippleException, IOException;
 
     @GET
-    @Path("accounts/{address}/payments/paths/{destinationAccount}/{destinationAmount}?{sourceCurrencies}")
+    @Path("accounts/{address}/payments/paths/{destinationAccount}/{destinationAmount}")
     PathsResponse findPaths(
             @PathParam("address") String address,
             @PathParam("destinationAccount") String destinationAccount,
             @PathParam("destinationAmount") Amount destinationAmount,
-            @PathParam("sourceCurrencies") Currencies sourceCurrencies
+            @QueryParam("source_currencies") Currencies sourceCurrencies
     ) throws RippleException, IOException;
 
     @GET
@@ -43,6 +43,7 @@ interface Ripple {
     ) throws RippleException, IOException;
 
 
+    //  Todo: double-check with https://dev.ripple.com/#payment-history
     /**
      * @param sourceAccount      If specified, limit the results to payments initiated by a particular account
      * @param destinationAccount If specified, limit the results to payments made to a particular account
@@ -87,7 +88,17 @@ interface Ripple {
             @PathParam("address") String address, @PathParam("hash")String hash
     ) throws RippleException, IOException;
 
+    @POST
+    @Path("accounts/{address}/orders")
+    OrderResponse placeOrder(@PathParam("address") String address, PlaceOrderRequest placeOrderRequest) throws RippleException, IOException;
+
+    @DELETE
+    @Path("accounts/{address}/orders/{sequence}")
+    OrderResponse cancelOrder(@PathParam("address") String address, @PathParam("sequence") Integer sequence, CancelOrderRequest req)
+            throws RippleException, IOException;
+
     @GET
+//    @Path("tx/{hash}") // see https://dev.ripple.com/#retrieve-ripple-transaction
     @Path("transactions/{hash}")
     TransactionResponse getTransactionDetails(@PathParam("hash") String hash) throws RippleException, IOException;
 
